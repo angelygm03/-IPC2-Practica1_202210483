@@ -12,12 +12,16 @@ class Cliente:
         self.nombreCliente = nombreCliente
         self.correo = correo
         self.nit = nit
+        self.compras = []  # Lista para almacenar las compras del cliente
+
+    def agregar_compra(self, compra):
+        self.compras.append(compra)
 
 class Compra:
-    def __init__(self, id_compra, productos, clientes, costo_total):
+    def __init__(self, id_compra, productos, cliente, costo_total):
         self.id_compra = id_compra
         self.productos = productos
-        self.cliente = clientes
+        self.cliente = cliente
         self.costo_total = costo_total
         self.impuesto = costo_total * 0.12
 
@@ -25,9 +29,9 @@ def limpiar_pantalla():
     if os.name == 'nt':
         os.system('cls')
 
-#listas
 productos = []
 clientes = []
+compras = []
 
 def main():
     print("     Bienvenido a Uolmart    ")
@@ -45,7 +49,7 @@ def main():
     elif respuesta == "2":
         registrar_cliente()
     elif respuesta == "3":
-        realizar_compra()
+        realizar_compra(compras)
     elif respuesta == "4":
         realizar_reporte()
     elif respuesta == "5":
@@ -76,7 +80,7 @@ def registrar_producto():
     
     producto = Producto(codigoProducto, nombreProducto, descripcionProducto, precioUnitario)
     productos.append(producto)
-    print(productos) #apuntador del producto en la lista
+    print(productos)
     print()
     print("¡Producto registrado con éxito!")
     print()
@@ -128,9 +132,8 @@ def registrar_cliente():
         print("Respuesta inválida. Intente de nuevo")
         agregarCliente()
 
-
-def realizar_compra():
-    limpiar_pantalla()
+def realizar_compra(compras):
+    #limpiar_pantalla()
     print("Menú Compra")
     print("1. Agregar producto")
     print("2. Terminar compra y facturar")
@@ -139,47 +142,78 @@ def realizar_compra():
         print("Clientes registrados: ")
         for i, cliente in enumerate(clientes, start=1):
             print(f"{i}. Nombre: {cliente.nombreCliente}, Correo: {cliente.correo}, NIT: {cliente.nit}")
-        while True:
-            try:
-                nit_cliente = int(input("Ingrese el NIT del cliente: "))
-                cliente_seleccionado = None
-                for cliente in clientes:
-                    if cliente.nit == nit_cliente:
-                        cliente_seleccionado = cliente
-                        break
-                if cliente_seleccionado is None:
-                    raise ValueError("El NIT ingresado no corresponde a ningún cliente registrado.")
-                break
-            except ValueError as e:
-                print(str(e))
-        
+
+        nit_cliente = input("Ingrese el NIT del cliente: ")
+        cliente_seleccionado = next((cliente for cliente in clientes if str(cliente.nit) == nit_cliente), None)
+        if cliente_seleccionado is None:
+            print("Error: El NIT ingresado no corresponde a ningún cliente registrado.")
+            return realizar_compra()
+
         print("Productos disponibles:")
         for i, producto in enumerate(productos, start=1):
             print(f"{i}. Código: {producto.codigoProducto}, Nombre: {producto.nombreProducto}, Precio: {producto.precioUnitario}")
-        
+
         productos_a_comprar = []
         while True:
-            seleccion_producto = input("Ingrese el número de producto a comprar (0 para terminar): ")
+            seleccion_producto = input("Ingrese el código de producto a comprar ('0' para terminar): ")
             if seleccion_producto == '0':
                 break
-        try:
-            indice_producto = int(seleccion_producto) - 1
-            producto_seleccionado = productos[indice_producto]
-            productos_a_comprar.append(producto_seleccionado)
-        except (ValueError, IndexError):
-            print("Selección inválida.")
-        realizar_compra()
+            producto_seleccionado = next((producto for producto in productos if producto.codigoProducto == seleccion_producto), None)
+            if producto_seleccionado:
+                productos_a_comprar.append(producto_seleccionado)
+            else:
+                print("Código de producto no válido.")
+
         costo_total = sum(producto.precioUnitario for producto in productos_a_comprar)
-        compra = Compra(id_compra = 1, productos = productos_a_comprar, clientes = cliente_seleccionado, costo_total = costo_total)
-    elif seleccion_compra == "2":    
-        print("Detalles de la compra:")
-        print("Cliente:", compra.cliente.nombreCliente)
-        print("Productos:")
-        for i, producto in enumerate(compra.productos, start=1):
-            print(f"{i}. Código: {producto.codigoProducto}, Nombre: {producto.nombreProducto}, Precio: {producto.precioUnitario}")
-        print("Costo Total:", compra.costo_total)
-        print("Impuesto (12%):", compra.impuesto)
+        compra = Compra(id_compra=1, productos=productos_a_comprar, cliente=cliente_seleccionado, costo_total=costo_total)
+        compras.append(compra)
+        print("Producto(s) agregado(s) a la compra.")
+        print(compras)
+        realizar_compra(compras)
+
+    elif seleccion_compra == "2":
+        if not clientes:
+            print("Error: No hay clientes registrados.")
+            return main()
+
+        if not productos:
+            print("Error: No hay productos registrados.")
+            return main()
+
+        print("Clientes registrados: ")
+        for cliente in clientes:
+            print(f"Nombre: {cliente.nombreCliente}, Correo: {cliente.correo}, NIT: {cliente.nit}")
+
+        nit_cliente = input("Ingrese el NIT del cliente: ")
+        cliente_seleccionado = next((cliente for cliente in clientes if str(cliente.nit) == nit_cliente), None)
+        if cliente_seleccionado is None:
+            print("Error: El NIT ingresado no corresponde a ningún cliente registrado.")
+            return
+
+        print("Factura:")
+        print("----------")
+        print("Productos comprados:")
+        for compra in compras:
+            if compra.cliente == cliente_seleccionado:
+                for i, producto in enumerate(compra.productos, start=1):
+                    print(f"{i}. Producto {producto.codigoProducto}: {producto.nombreProducto}, Q{producto.precioUnitario}")
+
+        print("\nCliente:")
+        print(f"Nombre: {cliente_seleccionado.nombreCliente}")
+        print(f"NIT: {cliente_seleccionado.nit}")
+
+        costo_total = sum(compra.costo_total for compra in compras if compra.cliente == cliente_seleccionado)
+        impuesto = costo_total * 0.12
+        costo_total_con_impuesto = costo_total + impuesto
+
+        print("\nResumen:")
+        print(f"Subtotal: Q{costo_total}")
+        print(f"Impuesto (12%): Q{impuesto}")
+        print(f"Costo Total: Q{costo_total_con_impuesto}")
+        input()
         main()
+    else:
+        print("Opción inválida, intente nuevamente")
 
 def realizar_reporte():
     limpiar_pantalla()
