@@ -1,31 +1,7 @@
 import os
-
-class Producto:
-    def __init__(self, codigoProducto, nombreProducto, descripcionProducto, precioUnitario):
-        self.codigoProducto = codigoProducto
-        self.nombreProducto = nombreProducto
-        self.descripcionProducto = descripcionProducto
-        self.precioUnitario = precioUnitario  
-
-class Cliente:
-    def __init__(self, nombreCliente, correo, nit):
-        self.nombreCliente = nombreCliente
-        self.correo = correo
-        self.nit = nit
-        self.compras = []  
-
-    def agregar_compra(self, compra):
-        self.compras.append(compra)
-
-class Compra:
-    contador_facturas = 0
-    def __init__(self, productos, cliente, costo_total):
-        Compra.contador_facturas += 1
-        self.id_compra = Compra.contador_facturas
-        self.productos = productos
-        self.cliente = cliente
-        self.costo_total = costo_total
-        self.impuesto = costo_total * 0.12
+from producto import Producto
+from compra import Compra
+from cliente import Cliente
 
 def limpiar_pantalla():
     if os.name == 'nt':
@@ -79,7 +55,7 @@ def registrar_producto():
     descripcionProducto = input("Ingrese la descripcion del producto: ")
     while True:
         try:
-            precioUnitario = float(input("Ingrese el precio unitario del producto Q."))
+            precioUnitario = float(input("Ingrese el precio unitario del producto Q"))
             break
         except ValueError:
             print("El precio ingresado no es válido. Intente nuevamente.")
@@ -194,10 +170,10 @@ def realizar_compra(compras):
         if cliente_seleccionado is None:
             print("Error: El NIT ingresado no corresponde a ningún cliente registrado.")
             return
-
-        print("Supermercado Uolmart")
-        print(f"Factura No.: {compras[-1].id_compra}")
-        print("----------------------------")
+        print ("---------------------------------------------")
+        print("             Supermercado Uolmart")
+        print(f"                Factura No.{compras[-1].id_compra}")
+        print("----------------------------------------------")
         print("\nDatos del cliente")
         print(f"Nombre: {cliente_seleccionado.nombreCliente}")
         print(f"Correo electrónico: {cliente_seleccionado.correo}")
@@ -236,11 +212,12 @@ def realizar_reporte():
 
     if factura_encontrada is None:
         print("No se encontró ninguna factura con el ID ingresado.")
-        return
+        main()
 
-    print("Factura:")
-    print("----------")
-    print(f"ID de Compra: {factura_encontrada.id_compra}")
+    print ("---------------------------------------------")
+    print("             Supermercado Uolmart")
+    print(f"                Factura No.{compras[-1].id_compra}")
+    print("----------------------------------------------")
     print("\nCliente")
     print(f"Nombre: {factura_encontrada.cliente.nombreCliente}")
     print(f"Correo eléctronico: {factura_encontrada.cliente.correo}")
