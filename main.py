@@ -62,7 +62,6 @@ def registrar_producto():
     
     producto = Producto(codigoProducto, nombreProducto, descripcionProducto, precioUnitario)
     productos.append(producto)
-    print(productos)
     print()
     print("¡Producto registrado con éxito!")
     print()
@@ -97,7 +96,6 @@ def registrar_cliente():
             return registrar_cliente()    
     cliente = Cliente(nombreCliente, correo, nit) 
     clientes.append(cliente)
-    print(clientes)
     print("¡Cliente registrado con éxito!")
     print()
     print("1. Registrar nuevo cliente")
@@ -148,8 +146,8 @@ def realizar_compra(compras):
         costo_total = sum(producto.precioUnitario for producto in productos_a_comprar)
         compra = Compra(productos_a_comprar, cliente_seleccionado, costo_total)
         compras.append(compra)
+        compra.id_compra = len(compras)
         print("Producto(s) agregado(s) a la compra.")
-        print(compras)
         realizar_compra(compras)
 
     elif seleccion_compra == "2":
@@ -186,50 +184,37 @@ def realizar_compra(compras):
                     print(f"Producto {producto.codigoProducto}: {producto.nombreProducto}, Q{producto.precioUnitario}")
 
         costo_total = sum(compra.costo_total for compra in compras if compra.cliente == cliente_seleccionado)
-        impuesto = costo_total * 0.12
-        costo_total_con_impuesto = costo_total + impuesto
+        impuesto = round(costo_total * 0.12, 2)
+        costo_total_con_impuesto = round(costo_total + impuesto, 2)
 
         print("\nResumen")
         print(f"Subtotal: Q{costo_total}")
         print(f"Impuesto (12%): Q{impuesto}")
-        print(f"Costo Total: Q{costo_total_con_impuesto}")
+        print(f"Total a pagar: Q{costo_total_con_impuesto}")
+        print("----------------------------------------------")
         facturas.append(compra)
-        print(facturas)
         input()
         main()
     else:
         print("Opción inválida, intente nuevamente")
 
 def realizar_reporte():
-    print("Reporte de Compra")
+    print()
+    print("         REPORTE DE COMPRA")
     id_factura = input("Ingrese el ID de la factura: ")
 
     factura_encontrada = None
-    for factura in facturas:
-        if str(factura.id_compra) == id_factura:
-            factura_encontrada = factura
+    for transaccion in compras:
+        if str(transaccion.id_compra) == id_factura:
+            factura_encontrada = transaccion
             break
 
-    if factura_encontrada is None:
+    if factura_encontrada:
+        factura_encontrada.generar_reporte()
+    else:
         print("No se encontró ninguna factura con el ID ingresado.")
+        print()
         main()
-
-    print ("---------------------------------------------")
-    print("             Supermercado Uolmart")
-    print(f"                Factura No.{compras[-1].id_compra}")
-    print("----------------------------------------------")
-    print("\nCliente")
-    print(f"Nombre: {factura_encontrada.cliente.nombreCliente}")
-    print(f"Correo eléctronico: {factura_encontrada.cliente.correo}")
-    print(f"NIT: {factura_encontrada.cliente.nit}")
-    print("Productos comprados")
-    for producto in factura_encontrada.productos:
-        print(f"Producto {producto.codigoProducto}: {producto.nombreProducto}, Q{producto.precioUnitario}")
-    print("\nResumen")
-    print(f"Costo Total: Q{factura_encontrada.costo_total}")
-    print(f"Impuesto (12%): Q{factura_encontrada.impuesto}")
-    print(f"Costo Total con Impuesto: Q{factura_encontrada.costo_total + factura_encontrada.impuesto}")
-    print("--------------------------------------------")
     input()
     print("Opciones a realizar")
     print("1. Generar otro reporte")
